@@ -1,0 +1,131 @@
+// main.js — wires everything together: scene + avatar + detectors + camera,
+// then runs the render/detect loop and the small UI.
+import * as THREE from "three";
+import { CONFIG } from "./config.js";
+import { createScene } from "./scene.js";
+import { startCamera, stopCamera } from "./camera.js";
+import { createDetectors } from "./detectors.js";
+import { solve } from "./solver.js";
+import { VrmTarget } from "./avatarTarget.js";
+
+const view = document.getElementById("view");
+const video = document.getElementById("cam");
+const overlay = document.getElementById("overlay");
+const startBtn = document.getElementById("startBtn");
+const statusEl = document.getElementById("status");
+const fpsEl = document.getElementById("fps");
+
+const setStatus = (msg) => (statusEl.textContent = msg);
+
+const { renderer, scene, camera } = createScene(view);
+const avatar = new VrmTarget();
+
+let detectors = null;
+let running = false;
+let lastResults = null;
+let lastVideoTime = -1;
+const clock = new THREE.Clock();
+
+// --- Avatar loads immediately so the idle character is visible on page load ---
+setStatus("Loading avatar…");
+avatar
+  .load(CONFIG.avatarUrl, scene)
+  .then(() => setStatus("Ready. Click “Start camera”."))
+  .catch((e) => {
+    console.error(e);
+    setStatus("Avatar failed to load: " + e.message);
+  });
+
+// --- Main loop: render every frame; detect once per new camera frame ----------
+let frames = 0;
+let fpsClock = performance.now();
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = clock.getDelta();
+
+  if (running && video.readyState >= 2 && video.currentTime !== lastVideoTime) {
+    lastVideoTime = video.currentTime;
+    try {
+      lastResults = detectors.detect(video, performance.now());
+      avatar.applyRig(solve(lastResults, video));
+    } catch (e) {
+      console.error("detect/solve error:", e);
+    }
+  }
+
+  avatar.update(dt);
+  renderer.render(scene, camera);
+  if (CONFIG.debugLandmarks && lastResults) drawOverlay(lastResults);
+  else clearOverlay();
+
+  frames++;
+  const now = performance.now();
+  if (now - fpsClock >= 500) {
+    fpsEl.textContent = Math.round((frames * 1000) / (now - fpsClock)) + " fps";
+    frames = 0;
+    fpsClock = now;
+  }
+}
+animate();
+
+// --- Start / stop -------------------------------------------------------------
+startBtn.addEventListener("click", async () => {
+  if (running) {
+    running = false;
+    stopCamera(video);
+    startBtn.textContent = "Start camera";
+    setStatus("Stopped.");
+    return;
+  }
+  try {
+    startBtn.disabled = true;
+    if (!detectors) {
+      setStatus("Loading tracking models… (first run downloads ~30MB)");
+      detectors = await createDetectors();
+    }
+    setStatus("Requesting camera…");
+    await startCamera(video);
+    running = true;
+    startBtn.textContent = "Stop";
+    setStatus("Mirroring. Keys: M swap hands · H flip head · L landmarks · R turn avatar");
+  } catch (e) {
+    console.error(e);
+    setStatus("Error: " + e.message);
+  } finally {
+    startBtn.disabled = false;
+  }
+});
+
+// --- Live tuning keys (no code edits needed while testing) --------------------
+window.addEventListener("keydown", (e) => {
+  const k = e.key.toLowerCase();
+  if (k === "m") CONFIG.mirror.swapHands = !CONFIG.mirror.swapHands;
+  else if (k === "h") CONFIG.mirror.flipHeadYaw = !CONFIG.mirror.flipHeadYaw;
+  else if (k === "l") CONFIG.debugLandmarks = !CONFIG.debugLandmarks;
+  else if (k === "r" && avatar.vrm) avatar.vrm.scene.rotation.y += Math.PI;
+  else return;
+  console.info("[config]", { ...CONFIG.mirror, debugLandmarks: CONFIG.debugLandmarks });
+});
+
+// --- Optional landmark overlay (toggle with L) --------------------------------
+const octx = overlay.getContext("2d");
+function clearOverlay() {
+  if (overlay.width) octx.clearRect(0, 0, overlay.width, overlay.height);
+}
+function drawOverlay(results) {
+  const w = (overlay.width = overlay.clientWidth);
+  const h = (overlay.height = overlay.clientHeight);
+  octx.clearRect(0, 0, w, h);
+  const dot = (pts, color) => {
+    if (!pts) return;
+    octx.fillStyle = color;
+    for (const p of pts) {
+      octx.beginPath();
+      octx.arc(p.x * w, p.y * h, 2.5, 0, Math.PI * 2);
+      octx.fill();
+    }
+  };
+  (results.hands?.landmarks || []).forEach((lm) => dot(lm, "#5ad1ff"));
+  dot(results.pose?.landmarks?.[0], "#ffd166");
+  dot(results.face?.faceLandmarks?.[0], "rgba(120,255,180,0.5)");
+}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SgSL · Mirror</title>
+    <link rel="stylesheet" href="./styles.css" />
+
+    <!-- Browser library resolution. Versions are pinned; all load client-side. -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+          "@pixiv/three-vrm": "https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@3.5.4/lib/three-vrm.module.js",
+          "@mediapipe/tasks-vision": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/vision_bundle.mjs",
+          "kalidokit": "https://cdn.jsdelivr.net/npm/kalidokit@1.1.5/dist/kalidokit.es.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>SgSL · <span>Mirror</span></h1>
+      <div class="meta"><span id="fps">– fps</span></div>
+    </header>
+
+    <!-- 3D avatar fills the stage -->
+    <canvas id="view"></canvas>
+
+    <!-- Self-view: mirrored webcam + landmark overlay -->
+    <div class="preview">
+      <video id="cam" playsinline muted></video>
+      <canvas id="overlay"></canvas>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button id="startBtn">Start camera</button>
+      <p id="status">Loading…</p>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,21 @@
+Avatar model — license & provenance
+===================================
+File:    avatar.vrm
+Model:   "Sakurada Fumiriya" — a VRoid Studio sample model (male)
+Source:  https://github.com/madjin/vrm-samples  (vroid/beta/Sakurada_Fumiriya.vrm)
+Origin:  VRoid Project / pixiv sample model set (exported VRoidStudio-0.8.1)
+Format:  VRM 0.x (loads under @pixiv/three-vrm v3)
+
+License: CC0 1.0 Universal (Public Domain Dedication)
+         Declared in the model's embedded VRM meta: licenseName = "CC0",
+         allowedUser = Everyone, commercial usage = Allow.
+         Free to use, modify, redistribute, and use commercially. No credit required.
+
+Rig:     VRM 0.x · full humanoid incl. 30 finger bones · eye bones · blendshape
+         presets: Neutral, A, I, U, E, O, Blink, Blink_L, Blink_R, Angry, Fun,
+         Joy, Sorrow, Surprised.
+
+To change the avatar: replace this file with any VRM 0.x model that has humanoid
+finger bones and the A/I/U/E/O + Blink blendshape presets. For maximum face
+fidelity you can supply a "perfect-sync" VRM (52 ARKit blendshapes); the face
+blend-map in src/config.js will use them automatically if present.
