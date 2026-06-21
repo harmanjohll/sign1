@@ -14,6 +14,7 @@ const overlay = document.getElementById("overlay");
 const startBtn = document.getElementById("startBtn");
 const statusEl = document.getElementById("status");
 const fpsEl = document.getElementById("fps");
+const octx = overlay.getContext("2d"); // overlay canvas 2D context (used in the loop)
 
 const setStatus = (msg) => (statusEl.textContent = msg);
 
@@ -79,7 +80,6 @@ function animate() {
     fpsClock = now;
   }
 }
-animate();
 
 // --- Start / stop -------------------------------------------------------------
 startBtn.addEventListener("click", async () => {
@@ -124,7 +124,6 @@ window.addEventListener("keydown", (e) => {
 });
 
 // --- Optional landmark overlay (toggle with L) --------------------------------
-const octx = overlay.getContext("2d");
 function clearOverlay() {
   if (overlay.width) octx.clearRect(0, 0, overlay.width, overlay.height);
 }
@@ -145,3 +144,6 @@ function drawOverlay(results) {
   dot(results.pose?.landmarks?.[0], "#ffd166");
   dot(results.face?.faceLandmarks?.[0], "rgba(120,255,180,0.5)");
 }
+
+// Start the render loop last, after all setup and listeners are in place.
+animate();
