@@ -17,7 +17,19 @@ const fpsEl = document.getElementById("fps");
 
 const setStatus = (msg) => (statusEl.textContent = msg);
 
-const { renderer, scene, camera } = createScene(view);
+// Friendly text for the common getUserMedia / model-load failures.
+function cameraErrorMessage(e) {
+  const n = e?.name || "";
+  if (n === "NotAllowedError" || n === "SecurityError")
+    return "Camera blocked. Click the camera icon in the address bar and Allow, then press Start again.";
+  if (n === "NotFoundError" || n === "OverconstrainedError")
+    return "No camera found. Plug one in / close other apps using it, then press Start.";
+  if (n === "NotReadableError")
+    return "Camera is in use by another app. Close it (Zoom/Meet/Photo Booth) and press Start.";
+  return "Error: " + (e?.message || e);
+}
+
+const { renderer, scene, camera, controls } = createScene(view);
 const avatar = new VrmTarget();
 
 let detectors = null;
@@ -26,14 +38,14 @@ let lastResults = null;
 let lastVideoTime = -1;
 const clock = new THREE.Clock();
 
-// --- Avatar loads immediately so the idle character is visible on page load ---
-setStatus("Loading avatar…");
+// --- Fumi loads immediately so the idle character is visible on page load ---
+setStatus("Loading Fumi…");
 avatar
   .load(CONFIG.avatarUrl, scene)
-  .then(() => setStatus("Ready. Click “Start camera”."))
+  .then(() => setStatus("Ready. Click “Start camera”. (Drag to rotate, scroll to zoom.)"))
   .catch((e) => {
     console.error(e);
-    setStatus("Avatar failed to load: " + e.message);
+    setStatus("Fumi failed to load: " + e.message);
   });
 
 // --- Main loop: render every frame; detect once per new camera frame ----------
@@ -54,6 +66,7 @@ function animate() {
   }
 
   avatar.update(dt);
+  controls.update();
   renderer.render(scene, camera);
   if (CONFIG.debugLandmarks && lastResults) drawOverlay(lastResults);
   else clearOverlay();
@@ -79,18 +92,21 @@ startBtn.addEventListener("click", async () => {
   }
   try {
     startBtn.disabled = true;
-    if (!detectors) {
-      setStatus("Loading tracking models… (first run downloads ~30MB)");
-      detectors = await createDetectors();
-    }
+    // Camera FIRST, so you see yourself immediately even while models load.
     setStatus("Requesting camera…");
     await startCamera(video);
-    running = true;
     startBtn.textContent = "Stop";
-    setStatus("Mirroring. Keys: M swap hands · H flip head · L landmarks · R turn avatar");
+
+    if (!detectors) {
+      setStatus("Camera on. Loading tracking models… (first run ~30MB)");
+      detectors = await createDetectors();
+    }
+    running = true;
+    setStatus("Mirroring Fumi. Keys: M swap hands · H flip head · L landmarks · R turn Fumi");
   } catch (e) {
     console.error(e);
-    setStatus("Error: " + e.message);
+    setStatus(cameraErrorMessage(e));
+    startBtn.textContent = "Start camera";
   } finally {
     startBtn.disabled = false;
   }

@@ -1,5 +1,6 @@
-// scene.js — three.js scene, camera, lights, renderer, and resize handling.
+// scene.js — three.js scene, camera, lights, renderer, orbit controls, resize.
 import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 export function createScene(canvas) {
   const renderer = new THREE.WebGLRenderer({
@@ -12,16 +13,22 @@ export function createScene(canvas) {
 
   const scene = new THREE.Scene();
 
-  // Camera framed on the upper body (head + arms), since hands & face matter most.
-  const camera = new THREE.PerspectiveCamera(
-    32,
-    1, // real aspect set in resize()
-    0.1,
-    20,
-  );
-  camera.position.set(0, 1.32, 1.65);
-  const lookTarget = new THREE.Vector3(0, 1.28, 0);
-  camera.lookAt(lookTarget);
+  // Pulled back so Fumi fits in the window by default; zoomable via controls.
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
+  camera.position.set(0, 1.2, 2.9);
+
+  // Orbit controls: drag to rotate, scroll / pinch to zoom.
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 1.1, 0); // chest height
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.enablePan = true;
+  controls.screenSpacePanning = true;
+  controls.minDistance = 0.6;
+  controls.maxDistance = 9;
+  controls.minPolarAngle = 0.15;
+  controls.maxPolarAngle = Math.PI * 0.52; // don't drop below the floor
+  controls.update();
 
   // Soft, even lighting so the toon-shaded VRM reads cleanly.
   const hemi = new THREE.HemisphereLight(0xffffff, 0x444466, 1.6);
@@ -43,5 +50,5 @@ export function createScene(canvas) {
   window.addEventListener("resize", resize);
   resize();
 
-  return { renderer, scene, camera, lookTarget, resize };
+  return { renderer, scene, camera, controls, resize };
 }
