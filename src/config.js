@@ -27,7 +27,7 @@ export const CONFIG = {
   // The avatar mirrors you (reflection). If sides/head end up reversed during
   // testing, toggle live: M = reflect, H = head yaw (see main.js).
   mirror: {
-    reflect: true, // M key: true = mirror you (reflection); false = same-side copy
+    reflect: false, // M key: false = same-side copy (default); true = mirror/reflection
     swapHands: true, // align MediaPipe's selfie handedness with the rig (rarely changed)
     flipHeadYaw: false, // H key: negate head turn if reversed
   },
