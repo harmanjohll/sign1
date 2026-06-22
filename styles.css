@@ -44,7 +44,8 @@ body {
   position: fixed;
   right: 18px;
   bottom: 18px;
-  width: 260px;
+  width: 340px;
+  max-width: 42vw;
   aspect-ratio: 16 / 9;
   border-radius: 12px;
   overflow: hidden;
@@ -53,7 +54,6 @@ body {
   background: #000;
   z-index: 4;
 }
-/* Mirror the self-view so it reads like a real mirror. */
 .preview video,
 .preview #overlay {
   position: absolute;
@@ -61,6 +61,10 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+/* Mirror the video so the self-view reads like a real mirror. The overlay is
+   drawn in selfie space in JS, so it must NOT be flipped here. */
+.preview video {
   transform: scaleX(-1);
 }
 

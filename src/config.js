@@ -24,11 +24,12 @@ export const CONFIG = {
   camera: { width: 1280, height: 720, facingMode: "user" },
 
   // --- Mirror / handedness tuning -----------------------------------------
-  // The avatar faces you like a mirror. If hands/head end up reversed during
-  // testing, flip these (also toggleable live with keyboard: see main.js).
+  // The avatar mirrors you (reflection). If sides/head end up reversed during
+  // testing, toggle live: M = reflect, H = head yaw (see main.js).
   mirror: {
-    swapHands: false, // map your left hand to the avatar's left side or not
-    flipHeadYaw: false, // negate head turn left/right
+    reflect: true, // M key: true = mirror you (reflection); false = same-side copy
+    swapHands: true, // align MediaPipe's selfie handedness with the rig (rarely changed)
+    flipHeadYaw: false, // H key: negate head turn if reversed
   },
 
   // --- Smoothing (0..1 per frame; higher = snappier, lower = smoother) -----
@@ -49,6 +50,6 @@ export const CONFIG = {
     surprised: 1.2,
   },
 
-  // Show the dotted landmark overlay on the camera preview.
-  debugLandmarks: false,
+  // Show the landmark overlay (points + connections) on the camera preview.
+  debugLandmarks: true,
 };

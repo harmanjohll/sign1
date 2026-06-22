@@ -45,9 +45,9 @@ Libraries (pinned, loaded from jsDelivr in the browser): three.js 0.180,
 Tracking-to-avatar mapping often needs a left/right or sign flip depending on
 your camera. Adjust live with the keyboard (or edit `src/config.js`):
 
-- **M** — swap which hand drives which side
+- **M** — toggle mirror (reflection) vs. same-side (direct copy) mapping
 - **H** — flip head turn direction
-- **L** — toggle the landmark overlay on the self-view
+- **L** — toggle the landmark overlay (points + connections) on the self-view
 - **R** — rotate the avatar 180° (if it loads facing away)
 
 ## Avatar
